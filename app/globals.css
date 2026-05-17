@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+@import "../styles/primitives/colors.css";
+@import "../styles/utilities.css";
+
+:root {
+  --background: var(--primitive-white);
+  --foreground: var(--primitive-gray-900);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-canvas: var(--primitive-gray-50);
+  --color-surface: var(--primitive-white);
+  --color-surface-muted: var(--primitive-gray-50);
+  --color-border-subtle: var(--primitive-gray-100);
+  --color-text-primary: var(--primitive-gray-900);
+  --color-text-secondary: var(--primitive-gray-500);
+  --color-text-muted: var(--primitive-gray-400);
+  --color-text-disabled: var(--primitive-gray-300);
+  --color-brand-accent: var(--primitive-brand-accent);
+  --color-success: var(--primitive-success-500);
+  --color-success-surface: var(--primitive-success-50);
+  --color-warning: var(--primitive-warning-500);
+  --color-warning-surface: var(--primitive-warning-50);
+  --color-danger: var(--primitive-danger-500);
+  --color-danger-surface: var(--primitive-danger-50);
+  --color-danger-text: var(--primitive-danger-400);
+  --color-link: var(--primitive-blue-500);
+  --color-link-hover: var(--primitive-blue-600);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}

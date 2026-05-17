@@ -1,0 +1,285 @@
+@import "tailwindcss" reference;
+@import "./primitives/colors.css";
+
+@keyframes bounce-dot {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+@utility canvas-page {
+  min-height: 100vh;
+  background-color: var(--primitive-gray-50);
+}
+
+@utility surface-header {
+  background-color: var(--primitive-white);
+  border-bottom: 1px solid var(--primitive-gray-100);
+}
+
+@utility rounded-card {
+  border-radius: 1rem;
+}
+
+@utility rounded-inner {
+  border-radius: 0.75rem;
+}
+
+@utility surface-card {
+  background-color: var(--primitive-white);
+  border-radius: 1rem;
+  border: 1px solid var(--primitive-gray-100);
+  padding: 1rem;
+}
+
+@utility surface-muted {
+  background-color: var(--primitive-gray-50);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+@utility surface-bottom-bar {
+  background-color: var(--primitive-white);
+  border-top: 1px solid var(--primitive-gray-100);
+}
+
+@utility text-label-section {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primitive-gray-500);
+}
+
+@utility text-label-accent {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primitive-brand-accent);
+}
+
+@utility text-muted {
+  color: var(--primitive-gray-400);
+}
+
+@utility text-body {
+  color: var(--primitive-gray-900);
+}
+
+@utility text-body-sm {
+  font-size: 0.875rem;
+  color: var(--primitive-gray-900);
+}
+
+@utility badge-danger-surface {
+  background-color: var(--primitive-danger-50);
+  border-radius: 0.75rem;
+  padding: 0.375rem 0.75rem;
+}
+
+@utility badge-danger-text {
+  color: var(--primitive-danger-400);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+@utility alert-danger-banner {
+  background-color: var(--primitive-danger-50);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+@utility alert-danger-text {
+  color: var(--primitive-danger-400);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@utility badge-success-surface {
+  background-color: var(--primitive-success-50);
+  border-radius: 0.75rem;
+  padding: 0.375rem 0.75rem;
+}
+
+@utility badge-success-text {
+  color: var(--primitive-success-500);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+@utility btn-primary {
+  width: 100%;
+  background-color: var(--primitive-gray-900);
+  color: var(--primitive-white);
+  font-weight: 600;
+  padding: 1rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  transition: background-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background-color: var(--primitive-gray-800);
+  }
+
+  &:disabled {
+    background-color: var(--primitive-gray-300);
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-link {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--primitive-gray-600);
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &:hover {
+    color: var(--primitive-gray-900);
+  }
+}
+
+@utility btn-translate {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primitive-blue-500);
+
+  &:hover {
+    color: var(--primitive-blue-600);
+  }
+}
+
+@utility text-link {
+  color: var(--primitive-blue-500);
+}
+
+@utility text-link-hover {
+  color: var(--primitive-blue-600);
+}
+
+@utility skeleton-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: var(--primitive-gray-200);
+  border-radius: 0.75rem;
+}
+
+@utility score-circle-sm {
+  width: 7.5rem;
+  height: 7.5rem;
+}
+
+@utility score-circle-lg {
+  width: 10rem;
+  height: 10rem;
+}
+
+@utility score-surface-valid {
+  background-color: var(--primitive-success-50);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+@utility score-surface-review {
+  background-color: var(--primitive-warning-50);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+@utility score-surface-fraud {
+  background-color: var(--primitive-danger-50);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+@utility score-ring-valid {
+  color: var(--primitive-success-500);
+}
+
+@utility score-ring-review {
+  color: var(--primitive-warning-500);
+}
+
+@utility score-ring-fraud {
+  color: var(--primitive-danger-500);
+}
+
+@utility score-text-valid {
+  color: var(--primitive-success-700);
+}
+
+@utility score-text-review {
+  color: var(--primitive-warning-700);
+}
+
+@utility score-text-fraud {
+  color: var(--primitive-danger-700);
+}
+
+@utility score-btn-valid {
+  background-color: var(--primitive-success-500);
+  color: var(--primitive-white);
+
+  &:hover {
+    background-color: var(--primitive-success-600);
+  }
+}
+
+@utility score-btn-review {
+  background-color: var(--primitive-warning-500);
+  color: var(--primitive-white);
+
+  &:hover {
+    background-color: var(--primitive-warning-600);
+  }
+}
+
+@utility score-btn-fraud {
+  background-color: var(--primitive-danger-500);
+  color: var(--primitive-white);
+
+  &:hover {
+    background-color: var(--primitive-danger-600);
+  }
+}
+
+@utility thumb-claim-detail {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: var(--primitive-gray-50);
+  flex-shrink: 0;
+}
+
+@utility thumb-list {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: var(--primitive-gray-50);
+  flex-shrink: 0;
+}
+
+@utility loading-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background-color: var(--primitive-white);
+  border-radius: 9999px;
+  animation: bounce-dot 1.4s ease-in-out infinite;
+}
+
+@utility loading-dot-delay-1 {
+  animation-delay: 0.2s;
+}
+
+@utility loading-dot-delay-2 {
+  animation-delay: 0.4s;
+}

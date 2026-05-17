@@ -1,0 +1,1 @@
+export { isSpanishText } from "./text";

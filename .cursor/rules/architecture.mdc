@@ -1,0 +1,35 @@
+---
+description: defect-rate-ia architecture — follow CLAUDE.md (all agents)
+alwaysApply: true
+---
+
+# Architecture — defect-rate-ia
+
+**Canonical spec:** [CLAUDE.md](../../CLAUDE.md)  
+Overview: [docs/architecture.md](../../docs/architecture.md) · Reference: [docs/architecture-reference.md](../../docs/architecture-reference.md)
+
+## Layers
+
+| Layer | Path | Responsibility |
+|-------|------|----------------|
+| Smart | `app/**/page.tsx` | Hooks + dumb components; no direct HTTP |
+| Hooks | `hooks/use*.ts` | State, effects, handlers |
+| Services | `services/*.service.ts` | **axios** only |
+| Dumb | `components/` | UI via props/callbacks |
+| Lib | `lib/` | Types, pure logic, no I/O |
+
+## Required
+
+- Barrel imports: `@/components`, `@/hooks`, `@/services`
+- Design tokens: `styles/primitives/colors.css` + `styles/utilities.css` — no arbitrary Tailwind `[]` or inline UI colors
+- Merge classes: `cn` from `@/styles` — never `` `utility ${className}` ``
+- Exact deps: `pnpm add --save-exact package@version`
+- **No comments** in `.ts` / `.tsx` / `.css` we maintain (see CLAUDE.md)
+
+## Avoid
+
+- `fetch` in pages/hooks → use services
+- Domain state in dumb components → use hooks
+- Duplicated inline UI (e.g. Skeleton) → shared component
+
+Full detail: **CLAUDE.md**.

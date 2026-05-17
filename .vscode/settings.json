@@ -1,0 +1,11 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "files.associations": {
+    "styles/**/*.css": "tailwindcss",
+    "app/globals.css": "tailwindcss"
+  },
+  "tailwindCSS.experimental.configFile": {
+    "styles/utilities.css": "app/globals.css",
+    "styles/primitives/colors.css": "app/globals.css"
+  }
+}

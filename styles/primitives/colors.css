@@ -1,0 +1,31 @@
+:root {
+  --primitive-gray-50: #f9fafb;
+  --primitive-gray-100: #f3f4f6;
+  --primitive-gray-200: #e5e7eb;
+  --primitive-gray-300: #d1d5db;
+  --primitive-gray-400: #9ca3af;
+  --primitive-gray-500: #6b7280;
+  --primitive-gray-600: #4b5563;
+  --primitive-gray-700: #374151;
+  --primitive-gray-800: #1f2937;
+  --primitive-gray-900: #111827;
+  --primitive-brand-accent: #e8626d;
+  --primitive-blue-400: #60a5fa;
+  --primitive-blue-500: #3b82f6;
+  --primitive-blue-600: #2563eb;
+  --primitive-success-50: #f0fdf4;
+  --primitive-success-500: #22c55e;
+  --primitive-success-600: #16a34a;
+  --primitive-success-700: #15803d;
+  --primitive-warning-50: #fffbeb;
+  --primitive-warning-500: #f59e0b;
+  --primitive-warning-600: #d97706;
+  --primitive-warning-700: #b45309;
+  --primitive-danger-50: #fef2f2;
+  --primitive-danger-400: #f87171;
+  --primitive-danger-500: #ef4444;
+  --primitive-danger-600: #dc2626;
+  --primitive-danger-700: #b91c1c;
+  --primitive-white: #ffffff;
+  --primitive-black: #000000;
+}
