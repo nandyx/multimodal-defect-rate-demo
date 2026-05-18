@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, XIcon } from 'lucide-react';
-import { PageHeader } from './PageHeader';
+import { PageHeader } from "../molecules/PageHeader";
 import type { ClaimDetailView } from '@/types';
 import { claimDetailHeaderTitle } from '@/rules/claim-detail-header.rule';
 

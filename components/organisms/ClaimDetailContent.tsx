@@ -1,5 +1,6 @@
 import { ImageOff, Languages } from "lucide-react";
 import type { StubClaim } from "@/data/stubs/claims";
+import { RequestErrorState } from "../molecules/RequestErrorState";
 
 type Props = {
   claim: StubClaim;
@@ -8,6 +9,7 @@ type Props = {
   isTranslating: boolean;
   translatedText: string | null;
   showOriginal: boolean;
+  translateError: string | null;
   onTranslate: () => void;
   onToggleOriginal: () => void;
 };
@@ -19,6 +21,7 @@ export function ClaimDetailContent({
   isTranslating,
   translatedText,
   showOriginal,
+  translateError,
   onTranslate,
   onToggleOriginal,
 }: Props) {
@@ -57,6 +60,10 @@ export function ClaimDetailContent({
 
       <div className="surface-card space-y-3">
         <p className="text-label-section">Comentario</p>
+
+        {translateError && !isTranslating && (
+          <RequestErrorState message={translateError} onRetry={onTranslate} className="text-left" />
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="surface-muted">

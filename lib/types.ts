@@ -63,6 +63,12 @@ export type ClaimAnalysis = {
     moderationFlags: { name: string; confidence: number }[];
     isValid: boolean;
   };
+  imageTextMatch: {
+    matches: boolean;
+    mentionedItems: string[];
+    detectedItems: string[];
+    explanation: string;
+  } | null;
   score: {
     value: number;
     recommendation: Recommendation;

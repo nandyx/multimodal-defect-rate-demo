@@ -4,13 +4,21 @@ import { join } from "path";
 import { detectLanguage, detectSentiment, detectKeyPhrases, detectEntities, isComprehendSupported } from "@/lib/aws/comprehend";
 import { translateText } from "@/lib/aws/translate";
 import { detectLabels, detectModerationLabels } from "@/lib/aws/rekognition";
-import { calculateScore } from "@/lib/scoring";
+import { analyzeImageTextMatch } from "@/lib/image-text-match";
+import { analyzeClaim } from "@/lib/groq/evaluate";
 import { formatError, AppError } from "@/lib/errors";
 import { mockResponses } from "@/data/mock-responses";
 import { PARTNER } from "@/data/partner.const";
 import type { ClaimAnalysis } from "@/lib/types";
 
-const SCENARIO_MAP: Record<string, string> = {
+const CLAIM_MOCK_MAP: Record<string, string> = {
+  "claim-001": "legitimate",
+  "claim-002": "fraud",
+  "claim-003": "noImage",
+  "claim-004": "multilanguage",
+};
+
+const SCENARIO_FALLBACK: Record<string, string> = {
   real: "legitimate",
   fake: "fraud",
   "no-image": "noImage",
@@ -21,14 +29,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (process.env.DEMO_MODE === "mock") {
-      const scenarioType = body.scenarioType || "real";
-      const mockKey = SCENARIO_MAP[scenarioType] || "legitimate";
+      const mockKey = CLAIM_MOCK_MAP[body.claimId]
+        || SCENARIO_FALLBACK[body.scenarioType]
+        || "legitimate";
       const mock = mockResponses[mockKey];
-      if (!mock) {
-        return NextResponse.json(mockResponses.legitimate);
-      }
       await new Promise((r) => setTimeout(r, 800));
-      return NextResponse.json(mock);
+      return NextResponse.json(mock || mockResponses.legitimate);
     }
 
     const { text, imageUrl, imageBase64, restaurantLanguage } = body;
@@ -90,12 +96,22 @@ export async function POST(request: NextRequest) {
     }
 
     const imageIsValid = imageBytes ? (moderationFlags.length === 0 && labels.length > 0) : false;
-    const scoreResult = calculateScore({
+
+    const imageTextMatch = labels.length > 0
+      ? await analyzeImageTextMatch({ keyPhrases, entities, labels })
+      : null;
+
+    const scoreResult = await analyzeClaim({
+      claimId: body.claimId,
+      claimText: textForAnalysis,
       sentiment: sentimentResult.sentiment,
       keyPhrases,
-      labels,
+      entities,
+      imageLabels: labels,
       moderationFlags,
+      imageTextMatches: imageTextMatch?.matches,
       textLength: text.length,
+      hasImage: imageBytes !== null,
     });
 
     const analysis: ClaimAnalysis = {
@@ -116,9 +132,11 @@ export async function POST(request: NextRequest) {
         moderationFlags,
         isValid: imageIsValid,
       },
+      imageTextMatch,
       score: scoreResult,
     };
 
+    console.info("[debug:analyze-claim] response:", JSON.stringify(analysis, null, 2));
     return NextResponse.json(analysis);
   } catch (error) {
     console.error("[analyze-claim] Error:", error);

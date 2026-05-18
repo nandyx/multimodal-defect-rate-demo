@@ -4,82 +4,66 @@ import { useCallback, useEffect, useState } from "react";
 import { getClaimById } from "@/data/stubs/claims";
 import { PARTNER } from "@/data/partner.const";
 import { isSpanishText } from "@/lib";
-import { analyzeClaim, translateText } from "@/services";
-import type { ClaimAnalysis } from "@/lib/types";
+import { useAnalyzeClaim, useTranslateText } from "@/queries";
 import type { ClaimDetailView } from "@/types";
 import type { StubClaim } from "@/data/stubs/claims";
 
 export function useClaimDetail(id: string) {
   const claim = getClaimById(id);
-  const [analysis, setAnalysis] = useState<ClaimAnalysis | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<ClaimDetailView>("detail");
   const [claimLoaded, setClaimLoaded] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+
+  const analysisMutation = useAnalyzeClaim();
+  const translateMutation = useTranslateText();
 
   useEffect(() => {
     const timer = setTimeout(() => setClaimLoaded(true), 600);
     return () => clearTimeout(timer);
   }, [id]);
 
-  const handleTranslate = useCallback(async () => {
+  const handleTranslate = useCallback(() => {
     if (!claim) return;
     if (translatedText) {
       setShowOriginal(false);
       return;
     }
-    setIsTranslating(true);
-    try {
-      const result = await translateText({
+    translateMutation.mutate(
+      {
         text: claim.text,
         targetLang: PARTNER.language,
-      });
-      if (result) {
-        setTranslatedText(result);
-        setShowOriginal(false);
-      }
-    } catch {
-    } finally {
-      setIsTranslating(false);
-    }
-  }, [claim, translatedText]);
+      },
+      {
+        onSuccess: (result) => {
+          if (result) {
+            setTranslatedText(result);
+            setShowOriginal(false);
+          }
+        },
+      },
+    );
+  }, [claim, translatedText, translateMutation]);
 
   const toggleOriginal = useCallback(() => {
     setShowOriginal((prev) => !prev);
   }, []);
 
-  const runAnalysis = useCallback(async () => {
+  const runAnalysis = useCallback(() => {
     if (!claim) return;
     setView("analysis");
-    setIsLoading(true);
-    setError(null);
-    setAnalysis(null);
-
-    try {
-      const result = await analyzeClaim({
-        claimId: claim.id,
-        scenarioType: claim.scenarioType,
-        text: claim.text,
-        imageUrl: claim.imageUrl || null,
-      });
-      setAnalysis(result);
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Error de conexión. Verifica tu red e intenta de nuevo.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [claim]);
+    analysisMutation.mutate({
+      claimId: claim.id,
+      scenarioType: claim.scenarioType,
+      text: claim.text,
+      imageUrl: claim.imageUrl || null,
+    });
+  }, [claim, analysisMutation]);
 
   const goBackToDetail = useCallback(() => {
     setView("detail");
-    setAnalysis(null);
-    setError(null);
-  }, []);
+    analysisMutation.reset();
+  }, [analysisMutation]);
 
   const displayCommentText =
     translatedText && !showOriginal ? translatedText : (claim?.text ?? "");
@@ -88,13 +72,14 @@ export function useClaimDetail(id: string) {
 
   return {
     claim: claim as StubClaim | undefined,
-    analysis,
-    isLoading,
-    error,
+    analysis: analysisMutation.data || null,
+    isLoading: analysisMutation.isPending,
+    error: analysisMutation.error?.message || null,
     view,
     claimLoaded,
     translatedText,
-    isTranslating,
+    isTranslating: translateMutation.isPending,
+    translateError: translateMutation.error?.message || null,
     showOriginal,
     displayCommentText,
     showTranslateButton,

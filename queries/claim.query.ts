@@ -1,4 +1,5 @@
-import { httpClient } from "./http-client";
+import { useMutation } from "@tanstack/react-query";
+import { httpClient } from "@/lib/http-client";
 import type { ClaimAnalysis } from "@/lib/types";
 
 type AnalyzePayload = {
@@ -10,10 +11,16 @@ type AnalyzePayload = {
 
 type AnalyzeResponse = ClaimAnalysis | { error: { message: string } };
 
-export async function analyzeClaim(payload: AnalyzePayload): Promise<ClaimAnalysis> {
+async function analyzeClaim(payload: AnalyzePayload): Promise<ClaimAnalysis> {
   const { data } = await httpClient.post<AnalyzeResponse>("/analyze-claim", payload);
   if ("error" in data && data.error) {
     throw new Error(data.error.message);
   }
   return data as ClaimAnalysis;
+}
+
+export function useAnalyzeClaim() {
+  return useMutation({
+    mutationFn: analyzeClaim,
+  });
 }

@@ -20,7 +20,7 @@ export const stubClaims: StubClaim[] = [
     productImageUrl: '/stubs/reclaim_order.png',
     productDescription: 'Reclamos por órdenes incompleto y en mal estado.',
     status: 'paused',
-    text: 'I ordered a chicken sandwich and they sent me chilaquiles with beans!',
+    text: 'Bruh I ordered a chicken sandwich and they sent me chilaquiles with beans… how tf do you even mess that up?',
     imageUrl: '/stubs/reclaim_order.png',
     scenarioType: 'real',
   },

@@ -1,0 +1,1 @@
+export { ClaimDetailView } from "./ClaimDetailView";

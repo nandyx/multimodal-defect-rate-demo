@@ -35,6 +35,14 @@ Shared documentation lives in the **repo root and `docs/`** (not inside `.cursor
 - Prefer expressive names, small functions, and types over explanatory comments.
 - **Exceptions:** generated files (e.g. `next-env.d.ts`), third-party vendored code, and license headers where legally required.
 
+### Debug logging (`console.info`)
+
+- **Allowed:** `console.info("[debug:<context>] message", data)` in API routes for debugging service responses.
+- Format: `[debug:<route-name>]` prefix followed by the step and raw data.
+- Use in `app/api/**/route.ts` to trace service calls (Comprehend, Rekognition, Translate, Groq).
+- **Not allowed:** `console.log` in client-side code (components, hooks, queries).
+- Keep `console.error` for actual errors in catch blocks.
+
 ### Component constants (`consts/*.const.ts`)
 
 When a dumb component owns **more than 3** top-level constants tied 1:1 to that component (variant maps, copy, icons, layout numbers, …), extract them to **`consts/<feature>.const.ts`** (e.g. `consts/credibility-score.const.ts`).
@@ -49,7 +57,26 @@ Copy, labels, and branching derived from domain state belong in **`rules/<featur
 
 - Pure functions only (no React, no I/O)
 - Import from components: `@/rules/claim-card.rule`
-- Example: `scenarioLabel`, `claimDetailHeaderTitle`
+- Example: `scenarioLabel`, `claimDetailHeaderTitle`, `requestErrorTitle`, `sentimentVariant`
+
+### Atomic components (`components/{atoms,molecules,organisms,templates}/`)
+
+All UI lives under **`components/`** in Atomic Design layers. Composing lower layers is required; composing sideways or upward is forbidden.
+
+| Layer | Path | Contains | May import |
+|-------|------|----------|------------|
+| Atoms | `components/atoms/` | Smallest UI (Skeleton, chips, bars) | `@/styles`, icons, `@/lib/types` only |
+| Molecules | `components/molecules/` | Simple combos (PageHeader, RequestErrorState, ClaimCard) | `atoms/`, `@/consts/` |
+| Organisms | `components/organisms/` | Domain blocks (AnalysisPanel, ClaimDetailContent) | `atoms/`, `molecules/`, `@/rules/`, `@/types/` |
+| Templates | `components/templates/` | Screen layout, no new business logic | `atoms/`, `molecules/`, `organisms/` |
+
+**Public barrel** ([`components/index.ts`](components/index.ts)): re-exports `templates/`, `organisms/`, and `PageHeader` for pages. Do not export `atoms/` by default.
+
+**Infra outside atomic tree:** [`providers/QueryProvider.tsx`](providers/QueryProvider.tsx) (TanStack Query).
+
+**API / network errors:** use molecule [`RequestErrorState`](components/molecules/RequestErrorState.tsx) + `btn-retry` utility. Copy in `rules/request-error.rule.ts`. Show on `isError`; never leave skeleton visible when the mutation failed.
+
+**Score animation:** organism `CredibilityScoreSection` may call `useAnimatedScore`; molecule `CredibilityScore` receives `displayValue` only.
 
 ---
 
@@ -57,27 +84,29 @@ Copy, labels, and branching derived from domain state belong in **`rules/<featur
 
 ```
 app/**/page.tsx          → smart (orchestration only)
-hooks/use*.ts            → application logic (state, effects, handlers)
-services/*.service.ts    → HTTP via axios (browser/client only)
+hooks/use*.ts            → application logic (state, effects, TanStack Query mutations)
+queries/*.query.ts       → HTTP via axios + TanStack Query patterns (browser/client only)
 components/*             → dumb UI (props + callbacks)
-lib/*                    → pure code, no I/O
-app/api/**/route.ts      → server routes (may use lib/aws)
+lib/*                    → pure code, http-client, no React
+lib/aws/*                → AWS SDK wrappers (server-side only)
+lib/groq/*               → Groq AI evaluation (server-side only)
+app/api/**/route.ts      → server routes (use lib/aws, lib/groq)
 ```
 
 | Layer | Location | May | Must not |
 |-------|----------|-----|----------|
 | Smart | `app/**/page.tsx` | Compose hooks + dumb components | `fetch`/`axios`, long inline business logic |
-| Hooks | `hooks/` | State, effects, call services | Direct HTTP from pages |
-| Services | `services/` | `axios` via `http-client.ts` | Be imported from dumb components |
-| Dumb | `components/` | Props, callbacks, presentational UI | `fetch`, router, domain state, business copy/rules |
+| Hooks | `hooks/` | State, effects, TanStack Query mutations | Direct HTTP from pages |
+| Queries | `queries/` | `axios` via `@/lib/http-client`, export query/mutation functions | Be imported from dumb components |
+| Dumb | `components/` (atomic layers) | Props, callbacks, presentational UI | `fetch`, router, domain state, business copy/rules, upward/sideways component imports |
 | Consts | `consts/` | Variant maps, labels, icons tied to a component | React, I/O |
 | Rules | `rules/` | Business copy and branching from domain state | React, I/O |
-| Lib | `lib/` | Domain types, scoring, pure helpers | Network I/O |
+| Lib | `lib/` | Domain types, http-client, pure helpers, server-side services | React |
 | Types | `types/` | Shared UI/app types (view modes, props unions) | Network I/O, hooks-only types |
 
 **App Router note:** “pages” means `app/**/page.tsx`, not a legacy `pages/` directory.
 
-Visual-only behavior (e.g. score animation) → `useAnimatedScore` in `hooks/`; dumb component receives `displayValue` as a prop.
+Visual-only behavior (e.g. score animation) → `useAnimatedScore` in `hooks/`; used from `CredibilityScoreSection` (organism); molecule `CredibilityScore` receives `displayValue` as a prop.
 
 ---
 
@@ -85,17 +114,23 @@ Visual-only behavior (e.g. score animation) → `useAnimatedScore` in `hooks/`; 
 
 - Name: `use` + domain (`useClaimDetail`).
 - Export through `hooks/index.ts`.
-- Own `useState`, `useEffect`, and handlers; call `services`, never `fetch`/`axios` directly.
+- Consume query hooks from `queries/` (`useAnalyzeClaim()`, `useTranslateText()`).
+- Own `useState`, `useEffect` for local UI state; delegate HTTP state to TanStack Query.
+- Never import `axios`, `fetch`, or `httpClient` directly.
 
 ---
 
-## Services (axios)
+## Queries (TanStack Query + axios)
 
-- One file per domain: `claim.service.ts`, `translate.service.ts`.
-- Shared client: `services/http-client.ts` with `baseURL: "/api"`.
-- **Only** service modules import `axios`.
+- One file per domain: `queries/claim.query.ts`, `queries/translate.query.ts`.
+- Each file exports a **hook** (`useAnalyzeClaim`, `useTranslateText`) that wraps `useMutation`.
+- The HTTP function stays **private** inside the file — only the hook is exported.
+- Shared HTTP client: `lib/http-client.ts` with `baseURL: "/api"`.
+- **Only** query modules import `axios` (via `@/lib/http-client`).
+- `QueryProvider` wraps the app in `app/layout.tsx`.
 
 ```typescript
+// lib/http-client.ts
 import axios from "axios";
 
 export const httpClient = axios.create({
@@ -104,7 +139,33 @@ export const httpClient = axios.create({
 });
 ```
 
-**`lib/` vs `services/`:** `lib/` has no network calls. Browser → `services/`. Route handlers → `lib/aws` (or a server-side service in a later phase).
+```typescript
+// queries/claim.query.ts
+import { useMutation } from "@tanstack/react-query";
+import { httpClient } from "@/lib/http-client";
+
+async function analyzeClaim(payload: AnalyzePayload): Promise<ClaimAnalysis> {
+  const { data } = await httpClient.post("/analyze-claim", payload);
+  return data;
+}
+
+export function useAnalyzeClaim() {
+  return useMutation({ mutationFn: analyzeClaim });
+}
+```
+
+```typescript
+// hooks/useClaimDetail.ts — consuming queries
+import { useAnalyzeClaim, useTranslateText } from "@/queries";
+
+const analysisMutation = useAnalyzeClaim();
+analysisMutation.mutate(payload);   // fire
+analysisMutation.data;              // result
+analysisMutation.isPending;         // loading
+analysisMutation.error?.message;    // error
+```
+
+**`lib/` vs `queries/`:** `lib/` contains the http-client and server-side code (AWS, Groq). `queries/` is client-side and exports TanStack Query hooks. Route handlers → `lib/aws`, `lib/groq`.
 
 ---
 
@@ -114,7 +175,7 @@ Folders with multiple modules export `index.ts`:
 
 ```typescript
 import { useClaimDetail } from "@/hooks";
-import { analyzeClaim } from "@/services";
+import { analyzeClaim } from "@/queries";
 import { Skeleton, AnalysisPanel } from "@/components";
 ```
 
@@ -171,6 +232,8 @@ Nest `&:hover { ... }` inside `@utility` blocks (Tailwind v4 does not allow `@ut
 | axios | 1.9.0 | `pnpm add --save-exact axios@1.9.0` |
 | clsx | 2.1.1 | `pnpm add --save-exact clsx@2.1.1` |
 | tailwind-merge | 3.3.1 | `pnpm add --save-exact tailwind-merge@3.3.1` |
+| @tanstack/react-query | 5.75.5 | `pnpm add --save-exact @tanstack/react-query@5.75.5` |
+| groq-sdk | 0.20.0 | `pnpm add --save-exact groq-sdk@0.20.0` |
 
 ---
 
@@ -182,16 +245,25 @@ app/
   claim/[id]/page.tsx
   api/**/route.ts
 components/
-  CredibilityScore.tsx
+  atoms/
+  molecules/
+  organisms/
+  templates/
   index.ts
+providers/
+  QueryProvider.tsx
 consts/
   credibility-score.const.ts
 rules/
   claim-card.rule.ts
   claim-detail-header.rule.ts
+  request-error.rule.ts
+  analysis-panel.rule.ts
 hooks/
   index.ts
-services/
+queries/
+  claim.query.ts
+  translate.query.ts
   index.ts
 styles/
   cn.ts
@@ -199,6 +271,9 @@ styles/
   primitives/colors.css
   utilities.css
 lib/
+  http-client.ts
+  aws/
+  groq/
 types/
   index.ts
 data/
@@ -214,8 +289,8 @@ docs/
 ## Migration checklist (existing code)
 
 1. Primitives + utilities in `styles/`.
-2. `http-client` + domain services; remove `fetch` from pages.
-3. Extract `useClaimDetail`, `useAnimatedScore`.
+2. `http-client` in `lib/` + domain queries in `queries/`; remove `fetch` from pages.
+3. Extract `useClaimDetail`, `useAnimatedScore` with TanStack Query `useMutation`.
 4. Smart `page.tsx` = composition only.
 5. Shared dumb components + barrels.
 6. Presentational `CredibilityScore` + animation hook.

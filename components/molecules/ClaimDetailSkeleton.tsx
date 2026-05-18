@@ -1,4 +1,4 @@
-import { Skeleton } from "./Skeleton";
+import { Skeleton } from "../atoms/Skeleton";
 
 export function ClaimDetailSkeleton() {
   return (

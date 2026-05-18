@@ -15,7 +15,8 @@ Overview: [docs/architecture.md](../../docs/architecture.md) · Reference: [docs
 | Smart | `app/**/page.tsx` | Hooks + dumb components; no direct HTTP |
 | Hooks | `hooks/use*.ts` | State, effects, handlers |
 | Services | `services/*.service.ts` | **axios** only |
-| Dumb | `components/` | UI via props/callbacks |
+| Dumb | `components/{atoms,molecules,organisms,templates}/` | UI via props; import down only |
+| Providers | `providers/` | QueryProvider (not atomic UI) |
 | Lib | `lib/` | Types, pure logic, no I/O |
 
 ## Required
@@ -31,5 +32,7 @@ Overview: [docs/architecture.md](../../docs/architecture.md) · Reference: [docs
 - `fetch` in pages/hooks → use services
 - Domain state in dumb components → use hooks
 - Duplicated inline UI (e.g. Skeleton) → shared component
+- Organism → organism imports → use template or page composition
+- API errors inline → `RequestErrorState` + `btn-retry`
 
-Full detail: **CLAUDE.md**.
+Full detail: **CLAUDE.md** (Atomic components section).

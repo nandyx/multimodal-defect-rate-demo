@@ -1,4 +1,4 @@
-import { LoadingDots } from "./LoadingDots";
+import { LoadingDots } from "../atoms/LoadingDots";
 import type { ClaimAnalysis } from "@/lib/types";
 import type { ClaimDetailView } from "@/types";
 

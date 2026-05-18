@@ -13,18 +13,40 @@ defect-rate-ia/
 │   └── architecture-examples.md
 ├── app/
 ├── components/
+│   ├── atoms/
+│   ├── molecules/
+│   ├── organisms/
+│   └── templates/
+├── providers/
 ├── hooks/
-├── services/
+├── queries/
 ├── styles/
 └── lib/
 ```
 
+## Atomic component layers
+
+All under `components/`. Import direction: **down only**.
+
+```
+templates → organisms → molecules → atoms
+```
+
+| Layer | Example |
+|-------|---------|
+| `atoms/` | `Skeleton`, `AnalysisChip` |
+| `molecules/` | `PageHeader`, `RequestErrorState`, `ClaimCard` |
+| `organisms/` | `AnalysisPanel`, `ClaimDetailContent` |
+| `templates/` | `ClaimDetailView` |
+
+Pages import from `@/components` (templates/organisms). `providers/QueryProvider` is outside the atomic tree.
+
 ## Data flow
 
 ```
-page.tsx → useXxx() → xxx.service.ts → /api/* → lib/aws
+page.tsx → useXxx() → queries/*.query.ts → /api/* → lib/aws
                 ↓
-         components (props)
+         components (props, atomic layers)
 ```
 
 ## Templates
@@ -36,7 +58,7 @@ page.tsx → useXxx() → xxx.service.ts → /api/* → lib/aws
 
 import { use } from "react";
 import { useClaimDetail } from "@/hooks";
-import { ClaimDetailContent } from "@/components";
+import { ClaimDetailView, ClaimNotFound } from "@/components";
 
 export default function ClaimDetailPage({
   params,
@@ -45,8 +67,19 @@ export default function ClaimDetailPage({
 }) {
   const { id } = use(params);
   const vm = useClaimDetail(id);
-  if (!vm.claim) return null;
-  return <ClaimDetailContent {...vm} />;
+  if (!vm.claim) return <ClaimNotFound />;
+  return (
+    <ClaimDetailView
+      claim={vm.claim}
+      view={vm.view}
+      claimLoaded={vm.claimLoaded}
+      analysis={vm.analysis}
+      isLoading={vm.isLoading}
+      error={vm.error}
+      translateError={vm.translateError}
+      onRunAnalysis={vm.runAnalysis}
+    />
+  );
 }
 ```
 
@@ -127,6 +160,9 @@ export { useAnimatedScore } from "./useAnimatedScore";
 | `style={{ color: "#..." }}` | `text-label-accent` |
 | `// comment` in source | Remove; use clear names |
 | Deep `@/components/Foo` | `@/components` barrel |
+| Organism imports organism | Compose via template or lift to page |
+| Inline API error UI | `RequestErrorState` molecule |
+| Skeleton while `isError` | Show `RequestErrorState` + `onRetry` |
 
 ## Main utilities
 
@@ -138,4 +174,5 @@ export { useAnimatedScore } from "./useAnimatedScore";
 | `text-label-accent` | Brand accent label |
 | `skeleton-pulse` | Loading placeholder |
 | `btn-primary` | Primary CTA |
+| `btn-retry` | Gray retry button (API errors) |
 | `score-circle-sm` / `score-circle-lg` | Credibility ring size |

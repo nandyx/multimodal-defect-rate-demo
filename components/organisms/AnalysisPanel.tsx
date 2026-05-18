@@ -1,13 +1,15 @@
 "use client";
 
-import { Globe, MessageSquareText, ImageIcon, Target } from "lucide-react";
+import { Globe, MessageSquareText, ImageIcon, Target, GitCompareArrows } from "lucide-react";
 import { cn } from "@/styles";
 import type { ClaimAnalysis } from "@/lib/types";
-import { AnalysisChip } from "./AnalysisChip";
-import { AnalysisSectionHeader } from "./AnalysisSectionHeader";
-import { AnalysisSkeleton } from "./AnalysisSkeleton";
-import { ConfidenceBar } from "./ConfidenceBar";
-import { CredibilityScoreAnimated } from "./CredibilityScoreAnimated";
+import { AnalysisChip } from "../atoms/AnalysisChip";
+import { AnalysisSectionHeader } from "../atoms/AnalysisSectionHeader";
+import { AnalysisSkeleton } from "../molecules/AnalysisSkeleton";
+import { ConfidenceBar } from "../atoms/ConfidenceBar";
+import { CredibilityScoreSection } from "./CredibilityScoreSection";
+import { RequestErrorState } from "../molecules/RequestErrorState";
+import { sentimentVariant } from "@/rules/analysis-panel.rule";
 
 type Props = {
   analysis: ClaimAnalysis | null;
@@ -16,23 +18,9 @@ type Props = {
   onRetry: () => void;
 };
 
-function sentimentVariant(sentiment: string): "neutral" | "green" | "red" {
-  if (sentiment === "NEGATIVE") return "red";
-  if (sentiment === "POSITIVE") return "green";
-  return "neutral";
-}
-
 export function AnalysisPanel({ analysis, isLoading, error, onRetry }: Props) {
   if (error) {
-    return (
-      <div className="surface-card text-center">
-        <p className="score-text-fraud text-lg mb-2">Error en el análisis</p>
-        <p className="text-muted text-sm mb-4">{error}</p>
-        <button type="button" onClick={onRetry} className={cn("btn-primary", "w-auto", "px-6", "py-3", "text-sm")}>
-          Reintentar
-        </button>
-      </div>
-    );
+    return <RequestErrorState message={error} onRetry={onRetry} />;
   }
 
   if (isLoading) return <AnalysisSkeleton />;
@@ -40,6 +28,15 @@ export function AnalysisPanel({ analysis, isLoading, error, onRetry }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="surface-card">
+        <AnalysisSectionHeader icon={Target} title="Score de credibilidad" />
+        <CredibilityScoreSection
+          value={analysis.score.value}
+          recommendation={analysis.score.recommendation}
+          reasons={analysis.score.reasons}
+        />
+      </div>
+
       <div className="surface-card">
         <AnalysisSectionHeader icon={Globe} title="Idioma detectado" />
         <div className="surface-muted space-y-1">
@@ -126,14 +123,43 @@ export function AnalysisPanel({ analysis, isLoading, error, onRetry }: Props) {
         </div>
       </div>
 
-      <div className="surface-card">
-        <AnalysisSectionHeader icon={Target} title="Score de credibilidad" />
-        <CredibilityScoreAnimated
-          value={analysis.score.value}
-          recommendation={analysis.score.recommendation}
-          reasons={analysis.score.reasons}
-        />
-      </div>
+      {analysis.imageTextMatch && (
+        <div className="surface-card">
+          <AnalysisSectionHeader icon={GitCompareArrows} title="Coherencia texto-imagen" />
+          <div className="surface-muted space-y-2">
+            <div className="flex items-center gap-2">
+              <span
+                className={cn("w-2 h-2 rounded-full", analysis.imageTextMatch.matches ? "bg-success" : "bg-danger")}
+              />
+              <span className="text-sm text-body font-medium">
+                {analysis.imageTextMatch.matches ? "Coincide" : "No coincide"}
+              </span>
+            </div>
+            <p className="text-sm text-muted">{analysis.imageTextMatch.explanation}</p>
+            {analysis.imageTextMatch.mentionedItems.length > 0 && (
+              <div>
+                <p className="text-xs text-muted mb-1">Mencionado en texto</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {analysis.imageTextMatch.mentionedItems.map((item, i) => (
+                    <AnalysisChip key={i} label={item} variant="blue" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {analysis.imageTextMatch.detectedItems.length > 0 && (
+              <div>
+                <p className="text-xs text-muted mb-1">Detectado en imagen</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {analysis.imageTextMatch.detectedItems.slice(0, 5).map((item, i) => (
+                    <AnalysisChip key={i} label={item} variant={analysis.imageTextMatch!.matches ? "green" : "red"} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

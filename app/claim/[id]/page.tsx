@@ -25,6 +25,7 @@ export default function ClaimDetailPage({ params }: { params: Promise<{ id: stri
       showOriginal={vm.showOriginal}
       displayCommentText={vm.displayCommentText}
       showTranslateButton={vm.showTranslateButton}
+      translateError={vm.translateError}
       onTranslate={vm.handleTranslate}
       onToggleOriginal={vm.toggleOriginal}
       onRunAnalysis={vm.runAnalysis}

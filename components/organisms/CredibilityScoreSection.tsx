@@ -1,7 +1,7 @@
 "use client";
 
 import { useAnimatedScore } from "@/hooks";
-import { CredibilityScore } from "./CredibilityScore";
+import { CredibilityScore } from "../molecules/CredibilityScore";
 import type { Recommendation } from "@/lib/types";
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
   reasons: string[];
 };
 
-export function CredibilityScoreAnimated({ value, recommendation, reasons }: Props) {
+export function CredibilityScoreSection({ value, recommendation, reasons }: Props) {
   const displayValue = useAnimatedScore(value);
   return (
     <CredibilityScore

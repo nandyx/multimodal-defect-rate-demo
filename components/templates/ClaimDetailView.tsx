@@ -1,8 +1,8 @@
-import { ClaimDetailContent } from "./ClaimDetailContent";
-import { ClaimDetailFooter } from "./ClaimDetailFooter";
-import { ClaimDetailHeader } from "./ClaimDetailHeader";
-import { ClaimDetailSkeleton } from "./ClaimDetailSkeleton";
-import { AnalysisPanel } from "./AnalysisPanel";
+import { AnalysisPanel } from "../organisms/AnalysisPanel";
+import { ClaimDetailContent } from "../organisms/ClaimDetailContent";
+import { ClaimDetailFooter } from "../organisms/ClaimDetailFooter";
+import { ClaimDetailHeader } from "../organisms/ClaimDetailHeader";
+import { ClaimDetailSkeleton } from "../molecules/ClaimDetailSkeleton";
 import type { StubClaim } from "@/data/stubs/claims";
 import type { ClaimAnalysis } from "@/lib/types";
 import type { ClaimDetailView as ClaimView } from "@/types";
@@ -19,6 +19,7 @@ type Props = {
   showOriginal: boolean;
   displayCommentText: string;
   showTranslateButton: boolean;
+  translateError: string | null;
   onTranslate: () => void;
   onToggleOriginal: () => void;
   onRunAnalysis: () => void;
@@ -37,6 +38,7 @@ export function ClaimDetailView({
   showOriginal,
   displayCommentText,
   showTranslateButton,
+  translateError,
   onTranslate,
   onToggleOriginal,
   onRunAnalysis,
@@ -58,6 +60,7 @@ export function ClaimDetailView({
               isTranslating={isTranslating}
               translatedText={translatedText}
               showOriginal={showOriginal}
+              translateError={translateError}
               onTranslate={onTranslate}
               onToggleOriginal={onToggleOriginal}
             />

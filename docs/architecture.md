@@ -19,7 +19,8 @@ Cursor-only thin wrappers (same rules, no extra content): `.cursor/rules/archite
 | Topic | Rule |
 |-------|------|
 | Smart components | `app/**/page.tsx` — hooks + dumb UI only |
-| Dumb components | `components/` — props/callbacks, no HTTP |
+| Dumb components | `components/{atoms,molecules,organisms,templates}/` — props/callbacks, no HTTP |
+| API error UI | `RequestErrorState` molecule + `btn-retry` |
 | Logic | `hooks/use*.ts` |
 | HTTP client | `services/*.service.ts` with **axios** only |
 | Pure code | `lib/` — no I/O |
@@ -32,9 +33,9 @@ Cursor-only thin wrappers (same rules, no extra content): `.cursor/rules/archite
 ## Layers
 
 ```
-page.tsx → hook → service → /api/route → lib/aws
+page.tsx → hook → queries → /api/route → lib/aws
               ↓
-         components (props)
+         components (atomic layers)
 ```
 
 ## Design system

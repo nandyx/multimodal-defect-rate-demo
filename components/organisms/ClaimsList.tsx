@@ -1,5 +1,5 @@
 import type { StubClaim } from "@/data/stubs/claims";
-import { ClaimCard } from "./ClaimCard";
+import { ClaimCard } from "../molecules/ClaimCard";
 
 type Props = {
   claims: StubClaim[];
